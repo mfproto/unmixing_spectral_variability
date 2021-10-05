@@ -83,7 +83,9 @@ elseif strcmp(AECtype,'VAE')
         save('python/training_EM_data.mat','trainingData','em_idx','latent_dim','batchSize','beta_loss','actFunStr','m_idx')
 
         % train VAE and interpolate some samples to test
-        system('python python/vae_keras_ems_train.py')
+        train_script = 'python/vae_keras_ems_train.py'
+        % system(train_cmd)
+        python_api(train_script)
     end
     
     % TODO: get mapped training data, and synth signatures
@@ -103,4 +105,31 @@ else
     error('Unknown autoencoder type!') 
 end
 
+end
 
+
+function python_api(script, base_dir='/home/marko/projekti/detect/yolov5/venv', deactivate=false)
+    % executes cmd in virtual environment
+    %curr_dir = pwd;
+    
+    % set shell to bash first (ugly fix)
+    %system('bash')
+    
+    %enter_venv = ['source ' base_dir '/bin/activate'];
+    %system(enter_venv)
+    
+    default_python = [base_dir '/bin/python']
+    cmd = [default_python ' ' script]
+    
+    system(cmd)
+    
+    % deactivate?
+    if deactivate
+        exit_venv = ['deactivate']
+        system(exit_venv)
+    endif
+    
+    % cd back
+    %cd(curr_dir);
+end
+f

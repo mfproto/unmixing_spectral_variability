@@ -18,7 +18,8 @@ from keras.layers import Lambda, Input, Dense
 from keras.models import Model
 from keras.datasets import mnist
 from keras.losses import mse, binary_crossentropy
-from keras.utils import plot_model
+# from keras.utils import plot_model
+from keras.utils.vis_utils import plot_model
 from keras import backend as K
 
 import numpy as np
@@ -122,7 +123,7 @@ def plot_results(models,
 # load endmember signatures for training
 mat_contents = loadmat('python/training_EM_data.mat') # samples must be scaled to [0,1]
 
-x_train = mat_contents['trainingData'] # first dimension is training sample, second is input dim 
+x_train = mat_contents['trainingData'] # first dimension is training sample, second is input dim
 x_test  = x_train
 
 original_dim = x_train.shape[1]
@@ -135,7 +136,7 @@ y_test  = y_train
 
 # network parameters
 input_shape = (original_dim, )
-# batch_size = 3 
+# batch_size = 3
 batch_size = int(mat_contents['batchSize'])
 # latent_dim = 2
 latent_dim = int(mat_contents['latent_dim'])

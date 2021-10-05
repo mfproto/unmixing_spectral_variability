@@ -30,7 +30,9 @@ R = size(M0,2);
 N = nr*nc;
 AlphasMean = zeros(R,N);
 
+hh = waitbar(0);
 for i=1:N
+    waitbar(i / N, hh, 'Running NCM...');
     y = Y(:,i);
     [TalphaPlus,Tsigma2r] = unmixing(y,M0,Nmc,Nbi);
     AlphasMean(:,i) = mean(TalphaPlus(:,Nbi+1:end),2);

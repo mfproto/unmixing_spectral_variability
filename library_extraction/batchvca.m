@@ -36,7 +36,9 @@ function [ groups, components] = batchvca( pixels, p, bundles, percent)
 %     end
 
     for b = 1:bundles
-        [C,I] = datasample(pixels_update,floor(m),2,'Replace',true);
+        % [C,I] = datasample(pixels_update,floor(m),2,'Replace',true);
+        I = randsample(1:size(pixels, 2), floor(m), replacement=true);
+        C = pixels_update(:, I);
         B = [B, EIA_VCA(C, runs, p,false)];
     end
     

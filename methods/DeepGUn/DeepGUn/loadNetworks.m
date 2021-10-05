@@ -18,13 +18,15 @@ actFunStr = 'ReLU';
 networks = cell(1,P);
 for em=1:P
     % hinfo = hdf5info(['vae_EM_idx' num2str(em) '.h5']);
-    hinfo = hdf5info([baseFilename num2str(em) '.h5']);
+    hinfo = load([baseFilename num2str(em) '.h5']);
+    % hinfo = hdf5info([baseFilename num2str(em) '.h5']);
     numLayers = length(hinfo.GroupHierarchy.Groups(1).Groups);
     
     networks{em} = cell(1,numLayers);
     for layer=1:numLayers
         networks{em}{layer}.b = hdf5read(hinfo.GroupHierarchy.Groups(1).Groups(layer).Datasets(1)); % bias
-        networks{em}{layer}.W = hdf5read(hinfo.GroupHierarchy.Groups(1).Groups(layer).Datasets(2)); % weights
+        networks{em}{layer}.W = hdf5read(hinfo.GroupHierarchy.Groups(1).Groups(layer).Datasets(2));
+        % weights
         if layer < numLayers
             switch actFunStr
                 case {'relu','ReLU'}

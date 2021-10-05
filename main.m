@@ -13,10 +13,15 @@ clear all
 close all
 clc
 
-addpath(genpath('synthetic_data_generation'))
-addpath(genpath('library_extraction'))
-addpath(genpath('utils'))
-addpath('methods')
+warning off
+
+pkg load statistics signal
+
+addpath(genpath(pwd))
+%addpath(genpath('synthetic_data_generation'))
+%addpath(genpath('library_extraction'))
+%addpath(genpath('utils'))
+%addpath('methods')
 
 % rng(1000,'twister'); % for reproducibility, if desired
 
@@ -64,6 +69,7 @@ xlabel('Wavelength [$\mu$m]','interpreter','latex','fontsize',14)
 
 % ----------------------------------------
 % FCLS (baseline)
+'FCLS (baseline)'
 [A_FCLS,M_FCLS,time_fcls,Yhat_FCLS] = adaptor_FCLS(Yim,M0,Lib,[]);
 % saves the performance metrics:
 algnames{1} = 'FCLS';
@@ -84,6 +90,8 @@ A_init = A_FCLS;
 
 % ----------------------------------------
 % MESMA
+st_time = time()
+'MESMA'
 [A_MESMA,M_MESMA,time_MESMA,Yhat_MESMA] = adaptor_MESMA(Yim,M0,Lib,A_init);
 % saves the performance metrics:
 algnames{end+1} = 'MESMA';
@@ -94,11 +102,12 @@ temp = 0; for i=1:nr*nc, for j=1:P, temp = temp + subspace(Mth(:,j,i),M_MESMA(:,
 TIMES(end+1) = time_MESMA;
 A_est{end+1} = A_MESMA;
 M_est{end+1} = M_MESMA;
-
+MESMA_time = time() - st_time
 
 
 % ----------------------------------------
 % Fractional Sparse SU
+'Fractional Sparse SU'
 opt_SocialSparseU.fraction = 1/10;
 opt_SocialSparseU.lambda = 0.1;
 [A_SocialSparseU,M_SocialSparseU,time_socialSparseU,Yhat_SocialSparseU] = adaptor_SocialSparseU(Yim,M0,Lib,A_init,opt_SocialSparseU);
@@ -116,6 +125,8 @@ M_est{end+1} = M_SocialSparseU;
 
 % ----------------------------------------
 % ELMM
+'ELMM'
+st_time = time()
 opt_elmm.lambda_s = 1;
 opt_elmm.lambda_a = 0.05;
 opt_elmm.lambda_psi = 0.01;
@@ -129,29 +140,36 @@ temp = 0; for i=1:nr*nc, for j=1:P, temp = temp + subspace(Mth(:,j,i),M_ELMM(:,j
 TIMES(end+1) = time_elmm;
 A_est{end+1} = A_ELMM;
 M_est{end+1} = M_ELMM;
+ELMM_time = time() - st_time
 
 
 
 % ----------------------------------------
 % DeepGUn
-opt_DeepGUn.dimAut = 2;
-opt_DeepGUn.lambda_zref = 0.001;
-opt_DeepGUn.lambda_a = 0.01;
-[A_DeepGUn,M_DeepGUn,time_DeepGUn,Yhat_DeepGUn] = adaptor_DeepGUn(Yim,M0,Lib,A_init,opt_DeepGUn);
-% saves the performance metrics:
-algnames{end+1} = 'DeepGUn';
-RMSEA(end+1) = norm((A-A_DeepGUn)/numel(A),'fro');
-RMSEY(end+1) = norm((Y-Yhat_DeepGUn)/numel(Y),'fro');
-RMSEM(end+1) = norm((Mth(:)-M_DeepGUn(:))/numel(Mth),'fro');
-temp = 0; for i=1:nr*nc, for j=1:P, temp = temp + subspace(Mth(:,j,i),M_DeepGUn(:,j,i))/(nr*nc); end, end; SAMM(end+1) = temp; 
-TIMES(end+1) = time_DeepGUn;
-A_est{end+1} = A_DeepGUn;
-M_est{end+1} = M_DeepGUn;
+deepgun = false  % problems with calling python from octave
+if deepgun
+  'DeepGUn'
+  opt_DeepGUn.dimAut = 2;
+  opt_DeepGUn.lambda_zref = 0.001;
+  opt_DeepGUn.lambda_a = 0.01;
+  [A_DeepGUn,M_DeepGUn,time_DeepGUn,Yhat_DeepGUn] = adaptor_DeepGUn(Yim,M0,Lib,A_init,opt_DeepGUn);
+  % saves the performance metrics:
+  algnames{end+1} = 'DeepGUn';
+  RMSEA(end+1) = norm((A-A_DeepGUn)/numel(A),'fro');
+  RMSEY(end+1) = norm((Y-Yhat_DeepGUn)/numel(Y),'fro');
+  RMSEM(end+1) = norm((Mth(:)-M_DeepGUn(:))/numel(Mth),'fro');
+  temp = 0; for i=1:nr*nc, for j=1:P, temp = temp + subspace(Mth(:,j,i),M_DeepGUn(:,j,i))/(nr*nc); end, end; SAMM(end+1) = temp; 
+  TIMES(end+1) = time_DeepGUn;
+  A_est{end+1} = A_DeepGUn;
+  M_est{end+1} = M_DeepGUn;
+end
 
 
 
 % ----------------------------------------
 % RUSAL
+st_time = time()
+'RUSAL'
 opt_RUSAL.tau = 0.001;
 opt_RUSAL.tau2 = 0.001;
 [A_RUSAL,M_RUSAL,time_RUSAL,Yhat_RUSAL] = adaptor_RUSAL(Yim,M0,Lib,A_init,opt_RUSAL);
@@ -164,37 +182,45 @@ SAMM(end+1)  = nan;
 TIMES(end+1) = time_RUSAL;
 A_est{end+1} = A_RUSAL;
 M_est{end+1} = nan;
-
+RUSAL_time = time() - st_time
 
 
 % ----------------------------------------
 % Normal Compositional Model
-opt_NCM = [];
-[A_NCM,M_NCM,time_NCM,Yhat_NCM] = adaptor_NCM(Yim,M0,Lib,A_init,opt_NCM);
-% saves the performance metrics:
-algnames{end+1} = 'NCM';
-RMSEA(end+1) = norm((A-A_NCM)/numel(A),'fro');
-RMSEY(end+1) = norm((Y-Yhat_NCM)/numel(Y),'fro');
-RMSEM(end+1) = nan;
-SAMM(end+1)  = nan; 
-TIMES(end+1) = time_NCM;
-A_est{end+1} = A_NCM;
-M_est{end+1} = nan;
+ncm = false
+if ncm
+  'Normal Compositional Model'
+  opt_NCM = [];
+  [A_NCM,M_NCM,time_NCM,Yhat_NCM] = adaptor_NCM(Yim,M0,Lib,A_init,opt_NCM);
+  % saves the performance metrics:
+  algnames{end+1} = 'NCM';
+  RMSEA(end+1) = norm((A-A_NCM)/numel(A),'fro');
+  RMSEY(end+1) = norm((Y-Yhat_NCM)/numel(Y),'fro');
+  RMSEM(end+1) = nan;
+  SAMM(end+1)  = nan; 
+  TIMES(end+1) = time_NCM;
+  A_est{end+1} = A_NCM;
+  M_est{end+1} = nan;
+end
 
 
 
 % ----------------------------------------
 % Beta Compositional Model
-[A_BCM,M_BCM,time_BCM,Yhat_BCM] = adaptor_BCM(Yim,M0,Lib,A_init);
-% saves the performance metrics:
-algnames{end+1} = 'BCM';
-RMSEA(end+1) = norm((A-A_BCM)/numel(A),'fro');
-RMSEY(end+1) = norm((Y-Yhat_BCM)/numel(Y),'fro');
-RMSEM(end+1) = nan;
-SAMM(end+1)  = nan; 
-TIMES(end+1) = time_BCM;
-A_est{end+1} = A_BCM;
-M_est{end+1} = nan;
+bcm = false
+if bcm
+  'Beta Compositional Model'
+  [A_BCM,M_BCM,time_BCM,Yhat_BCM] = adaptor_BCM(Yim,M0,Lib,A_init);
+  % saves the performance metrics:
+  algnames{end+1} = 'BCM';
+  RMSEA(end+1) = norm((A-A_BCM)/numel(A),'fro');
+  RMSEY(end+1) = norm((Y-Yhat_BCM)/numel(Y),'fro');
+  RMSEM(end+1) = nan;
+  SAMM(end+1)  = nan; 
+  TIMES(end+1) = time_BCM;
+  A_est{end+1} = A_BCM;
+  M_est{end+1} = nan;
+end
 
 
 
@@ -204,29 +230,36 @@ M_est{end+1} = nan;
 % *********************************************************************** %
 scaleV = 10000; % scale the numbers to make vizualization easier
 
+pad_string = '...............';
+
 fprintf('\n\n Abundance estimation results: \n')
 for i=1:length(algnames)
-    fprintf([pad(algnames{i},15,'right','.') ': %f \n'], scaleV*RMSEA(i))
+    %fprintf([pad(algnames{i},15,'right','.') ': %f \n'], scaleV*RMSEA(i))
+    fprintf([algnames{i} pad_string ': %f \n'], scaleV*RMSEA(i))
 end
 
 fprintf('\n\n RMSY results: \n')
 for i=1:length(algnames)
-    fprintf([pad(algnames{i},15,'right','.') ': %f \n'], scaleV*RMSEY(i))
+    %fprintf([pad(algnames{i},15,'right','.') ': %f \n'], scaleV*RMSEY(i))
+    fprintf([algnames{i} pad_string ': %f \n'], scaleV*RMSEY(i))
 end
 
 fprintf('\n\n RMSM results: \n')
 for i=1:length(algnames)
-    fprintf([pad(algnames{i},15,'right','.') ': %f \n'], scaleV*RMSEM(i))
+    %fprintf([pad(algnames{i},15,'right','.') ': %f \n'], scaleV*RMSEM(i))
+    fprintf([algnames{i} pad_string ': %f \n'], scaleV*RMSEM(i))
 end
 
 fprintf('\n\n SAMM results: \n')
 for i=1:length(algnames)
-    fprintf([pad(algnames{i},15,'right','.') ': %f \n'], scaleV*SAMM(i))
+    %fprintf([pad(algnames{i},15,'right','.') ': %f \n'], scaleV*SAMM(i))
+    fprintf([algnames{i} pad_string ': %f \n'], scaleV*SAMM(i))
 end
 
 fprintf('\n\n Times results: \n')
 for i=1:length(algnames)
-    fprintf([pad(algnames{i},15,'right','.') ': %f \n'], TIMES(i))
+    %fprintf([pad(algnames{i},15,'right','.') ': %f \n'], TIMES(i))
+    fprintf([algnames{i} pad_string ': %f \n'], TIMES(i))
 end
 
 
