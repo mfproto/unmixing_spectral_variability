@@ -90,7 +90,7 @@ A_init = A_FCLS;
 
 % ----------------------------------------
 % MESMA
-st_time = time()
+st_time = time();
 'MESMA'
 [A_MESMA,M_MESMA,time_MESMA,Yhat_MESMA] = adaptor_MESMA(Yim,M0,Lib,A_init);
 % saves the performance metrics:
@@ -126,7 +126,7 @@ M_est{end+1} = M_SocialSparseU;
 % ----------------------------------------
 % ELMM
 'ELMM'
-st_time = time()
+st_time = time();
 opt_elmm.lambda_s = 1;
 opt_elmm.lambda_a = 0.05;
 opt_elmm.lambda_psi = 0.01;
@@ -168,7 +168,7 @@ end
 
 % ----------------------------------------
 % RUSAL
-st_time = time()
+st_time = time();
 'RUSAL'
 opt_RUSAL.tau = 0.001;
 opt_RUSAL.tau2 = 0.001;
@@ -371,6 +371,10 @@ set(ff, 'Position', [0 0 500 600])
 % savefig('RESULTS/estimEMsTests.fig')
 % print('RESULTS/estimEMsTests.pdf','-dpdf','-painters')
 % [~,~]=system(['pdfcrop RESULTS/estimEMsTests.pdf RESULTS/estimEMsTests.pdf']);
+save_dir = 'results'
+savefig([save_dir '/estimEMsTests.fig'])
+print([save_dir '/estimEMsTests.pdf'],'-dpdf','-painters')
+[~,~]=system(['pdfcrop ' save_dir '/estimEMsTests.pdf ' save_dir '/estimEMsTests.pdf']);
 
 
 
