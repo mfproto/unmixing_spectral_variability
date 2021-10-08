@@ -11,7 +11,7 @@ It contains a comparative evaluation of some spectral unmixing algorithms which 
 
 Executing `main.m` or `main_montecarlo.m` on Matlab should generate the synthetic data, process it with the unmixing algorithms, and display the results. The `main.m` code runs a single realization and display the estimated endmembers and abundance maps,`main_montecarlo.m` runs a Monte Carlo simulation and only displays the average quantitative metrics.
 
-# GNU Octave #
+## GNU Octave ##
 
 Tested with `Octave==6.3.0`.
 
